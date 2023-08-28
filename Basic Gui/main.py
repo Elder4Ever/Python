@@ -3,8 +3,12 @@ import string
 import json
 import random
 from tkinter import *
-#from tkinter.ttk import *
-filename = 'C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json'
+from tkinter import filedialog
+from tkinter.filedialog import asksaveasfile
+import sqlite3
+from sqlite3 import Error
+
+filename = 'C:/Users/BrandonElder/Desktop/Basic Gui/settings.json'
 title = "Brandon's Password Generator"
 version = "Version: Dev-Alpha-1.0"
 lic = "This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license."
@@ -31,7 +35,7 @@ def about_screen():
     about.mainloop()
 
 def settings():
-    if os.path.exists('C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json'):
+    if os.path.exists(filename):
         
         root.withdraw()
 
@@ -40,7 +44,7 @@ def settings():
             settings.destroy() 
 
         def save_settings():
-            f = open('C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json','r+')
+            f = open(filename,'r+')
             data = json.load(f)
             data['settings']['encrypted'] = False
             data['settings']['count'] = 0
@@ -135,6 +139,7 @@ def on_closing():
      root.destroy()
 
 def securePass():
+
     password = ""
     passlen = s.get()
     Strength = []
@@ -179,6 +184,35 @@ def securePass():
     print(password)
     return password
 
+def open_file():
+    file = filedialog.askopenfilename()
+    fob=open(file,'r+')
+    f = open(filename,'r+')
+    data = json.load(f)
+    data['settings']['data_file'] = fob.name
+    f.seek(0)
+    f.truncate()
+    f.write(json.dumps(data))
+    #file = filedialog.askopenfile()
+    #print(file.read())
+
+def file_save():
+    file = filedialog.asksaveasfilename(filetypes=[("SQLite3 Database File", ".db")], defaultextension=".db")
+    fob=open(file,'w')
+    fob.write("")
+    fob.close()
+    def sql_connection():
+        try:
+            con = sqlite3.connect(fob.name)
+            return con
+        except Error:
+            print(Error)
+    def sql_table(con):
+        cursorObj = con.cursor()
+        cursorObj.execute("CREATE TABLE account_info(account_id integer PRIMARY KEY, email text, password text, name text, url text, created_date text)")
+        con.commit()
+    con = sql_connection()
+    sql_table(con)
 
 root = Tk()
 root.configure(background='grey')
@@ -195,8 +229,8 @@ menubar = Menu(root)
 # Adding File Menu and commands
 file = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='File', menu = file)
-file.add_command(label ='New Database', command = None)
-file.add_command(label ='Save', command = None)
+file.add_command(label ='New Local Database', command = file_save)
+file.add_command(label ='Open Local Database', command = open_file)
 file.add_separator()
 file.add_command(label ='Exit', command = root.destroy)
 edit = Menu(menubar, tearoff = 0)
@@ -217,7 +251,7 @@ w = Label(root, text="Click Generate to Start",font=("Arial", 30))
 w.configure(background="grey")
 w.pack(pady=10)
 
-s = Scale(root, length=400,width=15, from_=1, to=30,highlightthickness=0,troughcolor='#73B5FA', tickinterval=29,sliderrelief='flat',activebackground='#1065BF', orient=HORIZONTAL,command=print_value)
+s = Scale(root, length=400,width=15, from_=6, to=30,highlightthickness=0,troughcolor='#73B5FA', tickinterval=24,sliderrelief='flat',activebackground='#1065BF', orient=HORIZONTAL,command=print_value)
 s.configure(background='grey')
 s.pack(pady=20)
 
