@@ -1,7 +1,1 @@
-{"settings":[ 
-    {
-        "wf":"", 
-        "count":0, 
-        "encrypted":0}
-]
-}
+{"settings": {"data_file": "data.pf", "count": 0, "encrypted": false, "lowercase": 1, "uppercase": 1, "numbers": 1, "special": 1}}

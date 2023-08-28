@@ -4,9 +4,11 @@ import json
 import random
 from tkinter import *
 #from tkinter.ttk import *
+filename = 'C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json'
 title = "Brandon's Password Generator"
 version = "Version: Dev-Alpha-1.0"
 lic = "This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license."
+
 def about_screen():
     def about_on_closing():
         root.deiconify()
@@ -30,9 +32,98 @@ def about_screen():
 
 def settings():
     if os.path.exists('C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json'):
-        f = open('C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json','r')
+        
+        root.withdraw()
+
+        def settings_on_closing():
+            root.deiconify()
+            settings.destroy() 
+
+        def save_settings():
+            f = open('C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json','r+')
+            data = json.load(f)
+            data['settings']['encrypted'] = False
+            data['settings']['count'] = 0
+            data['settings']['lowercase'] = val1.get()
+            data['settings']['uppercase'] = val2.get()
+            data['settings']['numbers'] = val3.get()
+            data['settings']['special'] = val4.get()
+            f.seek(0)
+            f.truncate()
+            f.write(json.dumps(data))
+            savedLabel.configure(text="Saved")
+        
+        settings = Toplevel()
+        settings.resizable(False,False)
+        settings.geometry('500x300')
+        settings.title("Settings")
+
+        global lowerbox
+        global upperbox
+        global numberbox
+        global specialbox
+        global Strength
+        Strength = []
+
+        f = open(filename,'r+')
         data = json.load(f)
-        print(data)
+        lower = data['settings']['lowercase']
+        upper = data['settings']['uppercase']
+        num = data['settings']['numbers']
+        spec = data['settings']['special']
+        
+        if lower == 1:
+            val1 = IntVar(value=1)
+            lowerbox = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+            Strength = Strength + lowerbox
+        else:
+            val1 = IntVar(value=0)
+
+        if upper == 1:
+            val2 = IntVar(value=1)
+            upperbox = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+            Strength = Strength + upperbox
+        else:
+            val2 = IntVar(value=0)
+
+        if num == 1:
+            val3 = IntVar(value=1)
+            numberbox = ['1','2','3','4','5','6','7','8','9','0']
+            Strength = Strength + numberbox
+        else:
+            val3 = IntVar(value=0)
+        
+        if spec == 1:
+            val4 = IntVar(value=1)
+            specialbox = ['!','@','#','#','$','%','^','&','*','(',')']
+            Strength = Strength + specialbox
+        else:
+            val4 = IntVar(value=0)
+
+        global lowercase
+        global uppercase
+        global number
+        global special
+        StrengthLabel = Label(settings, text='Strength', fg="Black", font="Arial 12 bold")
+        StrengthLabel.pack(padx=10, anchor=NW)
+        lowercase = Checkbutton(settings, text = "Lower Case", variable = val1, onvalue = 1, offvalue = 0, height = 1, width = 10)
+        uppercase = Checkbutton(settings, text = "Upper Case", variable = val2, onvalue = 1, offvalue = 0, height = 1, width = 10)
+        number = Checkbutton(settings, text = "Numbers", variable = val3, onvalue = 1, offvalue = 0, height = 1, width = 8)
+        special = Checkbutton(settings, text = "Special Characters", variable = val4, onvalue = 1, offvalue = 0, height = 1, width = 15)
+        
+        lowercase.pack(anchor=NW) 
+        uppercase.pack(anchor=NW) 
+        number.pack(anchor=NW) 
+        special.pack(anchor=NW)
+        
+        savedLabel = Label(settings, fg="Green", font=("Arial", 12))
+        savedLabel.pack(side = BOTTOM)
+        
+        savebutton = Button(settings, text='Save', fg='black', font=("Arial", 20), height = 1, width = 10, command=save_settings)
+        savebutton.pack(side = BOTTOM)
+
+        settings.protocol("WM_DELETE_WINDOW",settings_on_closing)
+        settings.mainloop()
     else:
         print('File does not exist')
 
@@ -46,8 +137,40 @@ def on_closing():
 def securePass():
     password = ""
     passlen = s.get()
+    Strength = []
     while len(password) != passlen:
-        strength = ["a","A","b","B","c","C","d","D","e","E","f","F","g","G","h","H","i","I","j","J","k","K","l","L","m","M","n","N","o","O","p","P","q","Q","r","R","s","S","t","T","u","U","v","V","w","W","x","X","y","Y","z","Z","1","2","3","4","5","6","7","8","9","0","!","@","#","$","%","^","&","*"]
+        f = open(filename,'r+')
+        data = json.load(f)
+        lower = data['settings']['lowercase']
+        upper = data['settings']['uppercase']
+        num = data['settings']['numbers']
+        spec = data['settings']['special']
+        
+        if lower == 1:
+            lowerbox = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+            Strength = Strength + lowerbox
+        else:
+            lowerbox = []
+
+        if upper == 1:
+            upperbox = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+            Strength = Strength + upperbox
+        else:
+            upperbox = []
+
+        if num == 1:
+            numberbox = ['1','2','3','4','5','6','7','8','9','0']
+            Strength = Strength + numberbox
+        else:
+            numberbox = []
+
+        if spec == 1:
+            specialbox = ['!','@','#','#','$','%','^','&','*','(',')']
+            Strength = Strength + specialbox
+        else:
+            specialbox = []
+
+        strength = Strength
         letters = random.choice(strength)
         password = password + letters
     root.clipboard_clear()
@@ -58,7 +181,7 @@ def securePass():
 
 
 root = Tk()
-
+root.configure(background='grey')
 sw = int(root.winfo_screenwidth() / 2)
 sh = int(root.winfo_screenheight() / 3)
 screen_resolution = str(sw)+'x'+str(sh)
@@ -73,13 +196,15 @@ menubar = Menu(root)
 file = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='File', menu = file)
 file.add_command(label ='New Database', command = None)
-file.add_command(label ='Open Database', command = None)
 file.add_command(label ='Save', command = None)
 file.add_separator()
 file.add_command(label ='Exit', command = root.destroy)
 edit = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='Edit', menu = edit)
 edit.add_command(label ='Settings', command = settings)
+view = Menu(menubar, tearoff = 0)
+menubar.add_cascade(label ='View', menu = view)
+view.add_command(label ='Local Database', command = None)
 help = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='Help', menu = help)
 help.add_command(label ='About', command = about_screen)
@@ -88,20 +213,20 @@ root.config(menu = menubar)
 
 p = securePass
 
-w = Label(root, text="Click Generate to Start",font=("Arial", 35))
-w.pack()
+w = Label(root, text="Click Generate to Start",font=("Arial", 30))
+w.configure(background="grey")
+w.pack(pady=10)
 
-s = Scale(root, length=200,width=15, from_=0, to=30, orient=HORIZONTAL,command=print_value)
-s.pack()
+s = Scale(root, length=400,width=15, from_=1, to=30,highlightthickness=0,troughcolor='#73B5FA', tickinterval=29,sliderrelief='flat',activebackground='#1065BF', orient=HORIZONTAL,command=print_value)
+s.configure(background='grey')
+s.pack(pady=20)
 
 redbutton = Button(root, text='Generate', fg='black', font=("Arial", 20), height = 1, width = 15, command=securePass)
-redbutton.pack()
+redbutton.pack(pady=10)
 
-warn = Label(root, text="Automaticlly Copies to Clipboard", fg="red", font=("Arial", 9))
-warn.pack( side = BOTTOM)
+warn = Label(root, text="**Generated Password Automatically Copies to Clipboard**", fg="pink", font=("Arial", 9))
+warn.configure(background="grey")
+warn.pack(pady=10)
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
-
-
-
