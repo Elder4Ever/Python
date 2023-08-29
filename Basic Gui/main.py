@@ -5,10 +5,11 @@ import random
 from tkinter import *
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfile
+from  tkinter import ttk
 import sqlite3
 from sqlite3 import Error
 
-filename = 'C:/Users/BrandonElder/Desktop/Basic Gui/settings.json'
+filename = 'C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json'
 title = "Brandon's Password Generator"
 version = "Version: Dev-Alpha-1.0"
 lic = "This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license."
@@ -33,6 +34,41 @@ def about_screen():
     license.pack(padx=20, pady=40)
     about.protocol("WM_DELETE_WINDOW",about_on_closing)
     about.mainloop()
+
+def local_data_screen():
+    data_screen = Tk()
+    data_screen['bg'] = 'white'
+    data_screen.geometry("500x500")
+    data_screen.title('Password Database')
+
+    table_frame = Frame(data_screen)
+    table_frame.pack()
+
+    datatable = ttk.Treeview(table_frame)
+
+    datatable['columns'] = ('account_id', 'user_email', 'password', 'name', 'url', 'created_date')
+
+    datatable.column("#0", width=0,  stretch=NO)
+    datatable.column("account_id",anchor=CENTER, width=80)
+    datatable.column("user_email",anchor=CENTER,width=80)
+    datatable.column("password",anchor=CENTER,width=80)
+    datatable.column("name",anchor=CENTER,width=80)
+    datatable.column("url",anchor=CENTER,width=80)
+    datatable.column("created_date",anchor=CENTER,width=80)
+
+    datatable.heading("#0",text="",anchor=CENTER)
+    datatable.heading("account_id",text="Account ID",anchor=CENTER)
+    datatable.heading("user_email",text="Email",anchor=CENTER)
+    datatable.heading("password",text="Password",anchor=CENTER)
+    datatable.heading("name",text="Name",anchor=CENTER)
+    datatable.heading("url",text="Url",anchor=CENTER)
+    datatable.heading("created_date",text="Account Saved Date",anchor=CENTER)
+
+    datatable.insert(parent='',index='end',iid=0,text='', values=('1','Ninja','101','Oklahoma', 'Moore','08/28/23'))
+
+    datatable.pack()
+
+    data_screen.mainloop()
 
 def settings():
     if os.path.exists(filename):
@@ -238,7 +274,7 @@ menubar.add_cascade(label ='Edit', menu = edit)
 edit.add_command(label ='Settings', command = settings)
 view = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='View', menu = view)
-view.add_command(label ='Local Database', command = None)
+view.add_command(label ='Local Database', command = local_data_screen)
 help = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='Help', menu = help)
 help.add_command(label ='About', command = about_screen)
