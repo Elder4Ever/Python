@@ -8,13 +8,18 @@ from tkinter.filedialog import asksaveasfile
 from  tkinter import ttk
 import sqlite3
 from sqlite3 import Error
+from datetime import date
+from datetime import datetime
+import webbrowser
 
-filename = 'C:/Users/Brandon/Desktop/Python/Basic Gui/settings.json'
+global filename
+filename = 'C:/Users/BrandonElder/Documents/GitHub/Python/Basic Gui/settings.json'
 title = "Brandon's Password Generator"
 version = "Version: Dev-Alpha-1.0"
 lic = "This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license."
 
 def about_screen():
+
     def about_on_closing():
         root.deiconify()
         about.destroy()
@@ -36,40 +41,174 @@ def about_screen():
     about.mainloop()
 
 def local_data_screen():
+
+    def destroy_data():
+        if datatable.winfo_ismapped() == 1:
+            datatable.destroy()
+
+
+    def submit_entry():
+        Email = eE.get()
+        Password = eP.get()
+        Name = eN.get()
+        Url = eU.get()
+        now = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+        entry = (None, Email, Password, Name, Url, now)
+        conn = sqlite3.connect(dataf['settings']['data_file'])
+        db_cursor = conn.cursor()
+        sql = """INSERT INTO account_info(account_id, email, password, name, url, created_date) values(?, ?, ?, ?, ?, ?)"""
+        db_cursor.execute(sql, entry)
+        conn.commit()
+        conn.close()
+        print('entry added')
+        destroy_data()
+        dataset()
+        
+
+    def new_entry():
+        global eE
+        global eP
+        global eN
+        global eU
+        global submitEntry
+        eE = Entry(data_screen)
+        eE.insert(0, 'Enter Email... ')
+        eE.pack(pady=5)
+        eP = Entry(data_screen)
+        eP.insert(0, 'Enter Password... ')
+        eP.pack(pady=5)
+        eN = Entry(data_screen)
+        eN.insert(0, 'Enter a Association Name... ')
+        eN.pack(pady=5)
+        eU = Entry(data_screen)
+        eU.insert(0, 'Enter URL... ')
+        eU.pack(pady=5)
+        submitEntry = Button(data_screen, text='Submit Entry', fg='black', font=("Arial", 10), height = 1, width = 13, command=submit_entry)
+        submitEntry.pack(pady=5, padx=20)
+        cancelEntry = Button(data_screen, text='Cancel Entry', fg='black', font=("Arial", 10), height = 1, width = 13, command=None)
+        cancelEntry.pack(pady=5, padx=20)
+        
+    
+    def del_entry():
+        selected=datatable.focus()
+        values = datatable.item(selected,'values')
+        cd = values[4]
+        conn = sqlite3.connect(dataf['settings']['data_file'])
+        db_cursor = conn.cursor()
+        sql = """DELETE FROM account_info WHERE created_date='%s'""" % cd
+        print(sql)
+        db_cursor.execute(sql)
+        conn.commit()
+        conn.close()
+        destroy_data()
+        dataset()
+        
+    def dataset():
+        global datatable
+        datatable = ttk.Treeview(table_frame)
+        datatable['columns'] = ('user_email', 'password', 'name', 'url', 'created_date')
+        datatable.column("#0", width=0,  stretch=NO)
+        datatable.column("user_email",anchor=CENTER,width=150)
+        datatable.column("password",anchor=CENTER,width=150)
+        datatable.column("name",anchor=CENTER,width=150)
+        datatable.column("url",anchor=CENTER,width=150)
+        datatable.column("created_date",anchor=CENTER,width=150)
+
+        datatable.heading("#0",text="",anchor=CENTER)
+        datatable.heading("user_email",text="Email",anchor=CENTER)
+        datatable.heading("password",text="Password",anchor=CENTER)
+        datatable.heading("name",text="Name",anchor=CENTER)
+        datatable.heading("url",text="Url",anchor=CENTER)
+        datatable.heading("created_date",text="Created Date",anchor=CENTER)
+        global dataf
+        df = open(filename,'r+')
+        dataf = json.load(df)
+        rows = sqlite3.connect(dataf['settings']['data_file']).execute("SELECT * FROM account_info").fetchall()
+        for row in rows:
+            #print()
+            datatable.insert(parent='',index='end', text='', values=(row[1],row[2],row[3],row[4],row[5]))
+
+        df.seek(0)
+        df.truncate()
+        df.write(json.dumps(dataf))
+        df.close()
+    
+        datatable.pack()
+
+
+        
+
+    def copyPass():
+        selected=datatable.focus()
+        values = datatable.item(selected,'values')
+        saved_pass = values[1]
+        data_screen.clipboard_clear()
+        data_screen.clipboard_append(saved_pass)
+
+    def copyEmail():
+        selected=datatable.focus()
+        values = datatable.item(selected,'values')
+        saved_email = values[0]
+        data_screen.clipboard_clear()
+        data_screen.clipboard_append(saved_email)
+
+    def goToWeb():
+        selected=datatable.focus()
+        values = datatable.item(selected,'values')
+        saved_url = values[3]
+        webbrowser.open(saved_url)
+    
+
+    m = Menu(root, tearoff = 0)
+    m.add_command(label ="Go To URL", command=goToWeb)
+    m.add_command(label ="Copy Email", command=copyEmail)
+    m.add_command(label ="Copy Password", command=copyPass)
+    m.add_command(label ="Reload (DNW)")
+    m.add_separator()
+    m.add_command(label ="Rename (DNW)")
+
+    def do_popup(event):
+        try:
+            m.tk_popup(event.x_root, event.y_root)
+        finally:
+            m.grab_release()
+    
+    
+    global datatable
     data_screen = Tk()
     data_screen['bg'] = 'white'
-    data_screen.geometry("500x500")
+    data_screen.geometry("800x500")
     data_screen.title('Password Database')
+    
+    data_screen.bind("<Button-3>", do_popup)
+    
+    menubar = Menu(data_screen)
+  
+    # Adding File Menu and commands
+    file = Menu(menubar, tearoff = 0)
+    menubar.add_cascade(label ='File', menu = file)
+    file.add_command(label ='Exit', command = data_screen.destroy)
+    actions = Menu(menubar, tearoff = 0)
+    menubar.add_cascade(label ='Actions', menu = actions)
+    actions.add_command(label ='Create New Entry', command = new_entry)
+    actions.add_separator()
+    actions.add_command(label ='Delete Selected', command = del_entry)
+    actions.add_command(label ='Edit Selected', command = None)
+    actions.add_separator()
+    actions.add_command(label ='Update Table', command = None)
+    help = Menu(menubar, tearoff = 0)
+    menubar.add_cascade(label ='Help', menu = help)
+    help.add_command(label ='About', command = about_screen)
+    data_screen.config(menu = menubar)
 
+    global table_frame
     table_frame = Frame(data_screen)
     table_frame.pack()
-
-    datatable = ttk.Treeview(table_frame)
-
-    datatable['columns'] = ('account_id', 'user_email', 'password', 'name', 'url', 'created_date')
-
-    datatable.column("#0", width=0,  stretch=NO)
-    datatable.column("account_id",anchor=CENTER, width=80)
-    datatable.column("user_email",anchor=CENTER,width=80)
-    datatable.column("password",anchor=CENTER,width=80)
-    datatable.column("name",anchor=CENTER,width=80)
-    datatable.column("url",anchor=CENTER,width=80)
-    datatable.column("created_date",anchor=CENTER,width=80)
-
-    datatable.heading("#0",text="",anchor=CENTER)
-    datatable.heading("account_id",text="Account ID",anchor=CENTER)
-    datatable.heading("user_email",text="Email",anchor=CENTER)
-    datatable.heading("password",text="Password",anchor=CENTER)
-    datatable.heading("name",text="Name",anchor=CENTER)
-    datatable.heading("url",text="Url",anchor=CENTER)
-    datatable.heading("created_date",text="Account Saved Date",anchor=CENTER)
-
-    datatable.insert(parent='',index='end',iid=0,text='', values=('1','Ninja','101','Oklahoma', 'Moore','08/28/23'))
-
-    datatable.pack()
-
+    
+    dataset()
+    
     data_screen.mainloop()
-
+        
 def settings():
     if os.path.exists(filename):
         
