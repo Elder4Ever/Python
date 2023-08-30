@@ -1,5 +1,4 @@
 import os
-import string
 import json
 import random
 from tkinter import *
@@ -12,16 +11,18 @@ from datetime import date
 from datetime import datetime
 import webbrowser
 import base64
-import hashlib
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import base64
 
+
 global filename
-filename = 'C:/Users/Brandon/Documents/GitHub/Python/Basic Gui/settings.json'
+
+filename = 'C:/Users/BrandonElder/Documents/GitHub/Python/Basic Gui/settings.json'
 title = "Brandon's Password Generator"
-version = "Version: Dev-Alpha-1.0"
+version = "Version: Dev-Alpha-2.0"
 lic = "This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license. This is a place holder until i get a license."
+
 def about_screen():
 
     def about_on_closing():
@@ -44,22 +45,138 @@ def about_screen():
     about.protocol("WM_DELETE_WINDOW",about_on_closing)
     about.mainloop()
 
+def license_screen():
+    def handle_click(event):
+        lk.delete(0, END)
+
+
+    def apply_license():
+        df = open(filename,'r+')
+        dataf = json.load(df)
+        if license_check(lk.get()) == True:
+            dataf['settings']['license_key'] = lk.get()
+            print('Good To Go')
+            lb.destroy()
+            lk.destroy()
+            titleLabel.destroy()
+            valitityLabel = Label(ls, text="License is Valid", fg='Green', font=("Arial", 14))
+            valitityLabel.pack()
+            df.seek(0)
+            df.truncate()
+            df.write(json.dumps(dataf))
+            df.close()
+        else:
+            print('Not Valid')
+    
+    global lk
+
+    
+    #data['settings']['license_key'] = "0"
+    ls = Tk()
+    ls.resizable(False,False)
+    ls.geometry('350x100')
+
+    ls.title("License")
+
+    titleLabel = Label(ls, text="Enter License Key", font=("Arial", 14))
+    titleLabel.pack()
+    
+    lk = Entry(ls, width='30',font=("Arial", 12), fg="lightgray")
+    lk.insert(0,'License Key')
+    lk.bind("<1>", handle_click)
+    lk.pack()
+
+    
+
+    lb = Button(ls, text='Apply License', width='15',font=("Arial", 9), fg="black", command=apply_license)
+    lb.pack()
+    df = open(filename,'r+')
+    dataf = json.load(df)
+    if license_check(dataf['settings']['license_key']):
+        lb.destroy()
+        lk.destroy()
+        titleLabel.destroy()
+        valitityLabel = Label(ls, text="License is Valid", fg='Green', font=("Arial", 14))
+        valitityLabel.pack()
+    df.seek(0)
+    df.truncate()
+    df.write(json.dumps(dataf))
+    df.close()
+
+    ls.mainloop()
+
+def license_check(key):
+    license_file = 'C:/Users/BrandonElder/Documents/GitHub/Python/Basic Gui/license.db'
+    conn = sqlite3.connect(license_file)
+    db_cursor = conn.cursor()
+    sql = """SELECT * FROM licenses"""
+    rows = db_cursor.execute(sql).fetchall()
+    for row in rows:
+        if key == row[1]:
+            print("TRUE")
+            return True
+
+    conn.commit()
+    conn.close()
+
 def local_data_screen():
+    def toggle_hide_pass():
+        f = open(filename,'r+')
+        data = json.load(f)
+        if data['settings']['pass_hidden'] == 1:
+            data['settings']['pass_hidden'] = 0
+        elif data['settings']['pass_hidden'] == 0:
+            data['settings']['pass_hidden'] = 1
+        f.seek(0)
+        f.truncate()
+        f.write(json.dumps(data))
+        f.close()
+        destroy_data()
+        dataset()
+            
     def encoded(passwd):
-        encode = base64.b64encode(bytes(passwd, 'utf-8'))
+        letter1 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter2 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter3 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter4 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter5 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']    
+        letter6 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter7 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter8 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter9 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        letter10 = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','0','!','@','#','#','$','%','^','&','*','(',')']
+        salt1 = random.choice(letter1)
+        salt2 = random.choice(letter2)
+        salt3 = random.choice(letter3)
+        salt4 = random.choice(letter4)
+        salt5 = random.choice(letter5)
+        salt6 = random.choice(letter6)
+        salt7 = random.choice(letter7)
+        salt8 = random.choice(letter8)
+        salt9 = random.choice(letter9)
+        salt10 = random.choice(letter10)
+        true_salt_front = salt1+salt2+salt3+salt4+salt5
+        true_salt_back = salt6+salt7+salt8+salt9+salt10
+        salted_pass = true_salt_front+passwd+true_salt_back
+        data = bytes(salted_pass, encoding='utf-8')
+        encode = base64.b64encode(data)
+        print(true_salt_front)
+        print(true_salt_back)
+        print(salted_pass)
         print(encode)
         return encode
     
     def decoded(passwd):
-        decode = base64.b64decode(passwd).decode('utf8')
-        return decode
+        decoded_bytes = base64.b64decode(passwd).decode()
+        decode_pass = decoded_bytes[5:]
+        decode_pass_back = decode_pass[:-5]
+        return decode_pass_back
     
     def destroy_data():
         if datatable.winfo_ismapped() == 1:
             datatable.destroy()
 
     def submit_entry():
-        global nonce
         Email = eE.get()
         Password = eP.get()
         Name = eN.get()
@@ -139,12 +256,19 @@ def local_data_screen():
         datatable.heading("name",text="Name",anchor=CENTER)
         datatable.heading("url",text="Url",anchor=CENTER)
         datatable.heading("created_date",text="Created Date",anchor=CENTER)
+
         global dataf
         df = open(filename,'r+')
         dataf = json.load(df)
         rows = sqlite3.connect(dataf['settings']['data_file']).execute("SELECT * FROM account_info").fetchall()
         for row in rows:
-            datatable.insert(parent='',index='end', text='', values=(row[1],decoded(row[2]),row[3],row[4],row[5]))
+            if dataf['settings']['pass_hidden'] == 0:
+                decode_pass = decoded(row[2])
+                datatable.insert(parent='',index='end', text='', values=(row[1],decode_pass,row[3],row[4],row[5]))
+            elif dataf['settings']['pass_hidden'] == 1:
+                decode_pass = decoded(row[2])
+                hidden_pass = '*'*(len(decode_pass) + int(4))
+                datatable.insert(parent='',index='end', text='', values=(row[1],hidden_pass,row[3],row[4],row[5]))
         df.seek(0)
         df.truncate()
         df.write(json.dumps(dataf))
@@ -153,7 +277,7 @@ def local_data_screen():
         datatable.pack()
 
     def copyPass():
-
+        
         selected=datatable.focus()
         if selected != False:
             msgLabel.configure(text="Select A Row, Then Try Again")
@@ -175,30 +299,38 @@ def local_data_screen():
         saved_url = values[3]
         webbrowser.open(saved_url)
     
+    df = open(filename,'r+')
+    dataf = json.load(df)
     m = Menu(root, tearoff = 0)
     m.add_command(label ="Go To URL", command=goToWeb)
     m.add_command(label ="Copy Email", command=copyEmail)
     m.add_command(label ="Copy Password", command=copyPass)
-    m.add_command(label ="Reload (DNW)")
     m.add_separator()
-    m.add_command(label ="Rename (DNW)")
+    m.add_command(label ="Delete Selected", command=del_entry)
 
     def do_popup(event):
         try:
             m.tk_popup(event.x_root, event.y_root)
+
         finally:
             m.grab_release()
+    df.seek(0)
+    df.truncate()
+    df.write(json.dumps(dataf))
+    df.close()
     
     global datatable
     data_screen = Tk()
-    data_screen['bg'] = 'white'
+    data_screen.configure(background='lightgrey')
     data_screen.geometry("800x500")
     data_screen.title('Password Database')
     
     data_screen.bind("<Button-3>", do_popup)
     
     menubar = Menu(data_screen)
-  
+    
+    df = open(filename,'r+')
+    dataf = json.load(df)
     # Adding File Menu and commands
     file = Menu(menubar, tearoff = 0)
     menubar.add_cascade(label ='File', menu = file)
@@ -207,12 +339,18 @@ def local_data_screen():
     menubar.add_cascade(label ='Actions', menu = actions)
     actions.add_command(label ='Create New Entry', command = new_entry)
     actions.add_separator()
-    actions.add_command(label ='Delete Selected', command = del_entry)
     actions.add_command(label ='Edit Selected', command = None)
+    actions.add_separator()
+    actions.add_command(label ="Show/Hide Passwords", command=toggle_hide_pass)
     help = Menu(menubar, tearoff = 0)
     menubar.add_cascade(label ='Help', menu = help)
     help.add_command(label ='About', command = about_screen)
     data_screen.config(menu = menubar)
+    df.seek(0)
+    df.truncate()
+    df.write(json.dumps(dataf))
+    df.close()
+
 
     global table_frame
     table_frame = Frame(data_screen)
@@ -220,6 +358,7 @@ def local_data_screen():
     
     dataset()
     msgLabel = Label(data_screen, text='',bg="white", fg="red", font="Arial 12 bold")
+    msgLabel.configure(background='lightgrey')
     msgLabel.pack(padx=10, anchor=N)
     data_screen.mainloop()
         
@@ -367,14 +506,25 @@ def securePass():
         strength = Strength
         letters = random.choice(strength)
         password = password + letters
-    root.clipboard_clear()
-    root.clipboard_append(password)
-    w.configure(text=password)
+    try:
+        eP
+    except:
+        root.clipboard_clear()
+        root.clipboard_append(password)
+        w.configure(text=password)
+    else:
+        if eP.winfo_ismapped() == 1:
+            eP.delete(0, END)
+            eP.insert(0, password)
+            w.configure(text=password)
+            root.clipboard_clear()
+            root.clipboard_append(password)
+            
     print(password)
     return password
 
 def open_file():
-    file = filedialog.askopenfilename()
+    file = filedialog.askopenfilename(filetypes=[("CyberK9's Secured Local Database", ".sld")], defaultextension=".cksd")
     fob=open(file,'r+')
     f = open(filename,'r+')
     data = json.load(f)
@@ -386,7 +536,7 @@ def open_file():
     #print(file.read())
 
 def file_save():
-    file = filedialog.asksaveasfilename(filetypes=[("SQLite3 Database File", ".db")], defaultextension=".db")
+    file = filedialog.asksaveasfilename(filetypes=[("CyberK9's Secured Local Database", ".sld")], defaultextension=".cksd")
     fob=open(file,'w')
     fob.write("")
     fob.close()
@@ -403,12 +553,14 @@ def file_save():
     con = sql_connection()
     sql_table(con)
 
+
 root = Tk()
-root.configure(background='grey')
+root.configure(background='lightgrey')
 sw = int(root.winfo_screenwidth() / 2)
 sh = int(root.winfo_screenheight() / 3)
 screen_resolution = str(sw)+'x'+str(sh)
 print(screen_resolution)
+
 root.title(title)
 root.geometry(screen_resolution)
 #root.resizable(False,False)#
@@ -430,6 +582,7 @@ menubar.add_cascade(label ='View', menu = view)
 view.add_command(label ='Local Database', command = local_data_screen)
 help = Menu(menubar, tearoff = 0)
 menubar.add_cascade(label ='Help', menu = help)
+help.add_command(label ='License', command = license_screen)
 help.add_command(label ='About', command = about_screen)
 root.config(menu = menubar)
 
@@ -437,18 +590,18 @@ root.config(menu = menubar)
 p = securePass
 
 w = Label(root, text="Click Generate to Start",font=("Arial", 30))
-w.configure(background="grey")
+w.configure(background="lightgrey")
 w.pack(pady=10)
 
 s = Scale(root, length=400,width=15, from_=6, to=30,highlightthickness=0,troughcolor='#73B5FA', tickinterval=24,sliderrelief='flat',activebackground='#1065BF', orient=HORIZONTAL,command=print_value)
-s.configure(background='grey')
+s.configure(background='lightgrey')
 s.pack(pady=20)
 
 redbutton = Button(root, text='Generate', fg='black', font=("Arial", 20), height = 1, width = 15, command=securePass)
 redbutton.pack(pady=10)
 
-warn = Label(root, text="**Generated Password Automatically Copies to Clipboard**", fg="pink", font=("Arial", 9))
-warn.configure(background="grey")
+warn = Label(root, text="**Generated Password Automatically Copies to Clipboard**", fg="darkred", font=("Arial", 9))
+warn.configure(background="lightgrey")
 warn.pack(pady=10)
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
