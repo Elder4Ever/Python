@@ -46,12 +46,12 @@ def about_screen():
 
 def local_data_screen():
     def encoded(passwd):
-        encode = base64.b64encode(base64.b64encode(bytes(passwd, 'utf-8')))
+        encode = base64.b64encode(bytes(passwd, 'utf-8'))
         print(encode)
         return encode
     
     def decoded(passwd):
-        decode = base64.b64decode(base64.b64decode(passwd)).decode('utf8')
+        decode = base64.b64decode(passwd).decode('utf8')
         return decode
     
     def destroy_data():
