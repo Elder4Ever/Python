@@ -49,7 +49,6 @@ def license_screen():
     def handle_click(event):
         lk.delete(0, END)
 
-
     def apply_license():
         df = open(filename,'r+')
         dataf = json.load(df)
@@ -59,19 +58,21 @@ def license_screen():
             lb.destroy()
             lk.destroy()
             titleLabel.destroy()
-            valitityLabel = Label(ls, text="License is Valid", fg='Green', font=("Arial", 14))
-            valitityLabel.pack()
+            valitityLabel = Label(ls, text="LICENSE IS VALID", fg='Green', font=("Arial", 14))
+            valitityLabel.pack(padx=10,pady=30)
             df.seek(0)
             df.truncate()
             df.write(json.dumps(dataf))
             df.close()
+            destroy_button()
+            destroy_label()
+            button_refresh()
+            generate_label()
         else:
             print('Not Valid')
     
     global lk
 
-    
-    #data['settings']['license_key'] = "0"
     ls = Tk()
     ls.resizable(False,False)
     ls.geometry('350x100')
@@ -81,12 +82,10 @@ def license_screen():
     titleLabel = Label(ls, text="Enter License Key", font=("Arial", 14))
     titleLabel.pack()
     
-    lk = Entry(ls, width='30',font=("Arial", 12), fg="lightgray")
+    lk = Entry(ls, width='30',font=("Arial", 12), fg="black")
     lk.insert(0,'License Key')
     lk.bind("<1>", handle_click)
     lk.pack()
-
-    
 
     lb = Button(ls, text='Apply License', width='15',font=("Arial", 9), fg="black", command=apply_license)
     lb.pack()
@@ -200,7 +199,8 @@ def local_data_screen():
         eU.destroy()
         submitEntry.destroy()
         cancelEntry.destroy()
-
+        lf.destroy()
+        
     def new_entry():
         global eE
         global eP
@@ -208,23 +208,26 @@ def local_data_screen():
         global eU
         global submitEntry
         global cancelEntry
-        eE = Entry(data_screen)
+        global lf
+        lf = LabelFrame(data_screen, text="Specialist:") 
+        
+        eE = Entry(lf)
         eE.insert(0, 'Enter Email... ')
-        eE.pack(pady=5)
-        eP = Entry(data_screen)
+        eE.grid(row=1,column=1)
+        eP = Entry(lf)
         eP.insert(0, 'Enter Password... ')
-        eP.pack(pady=5)
-        eN = Entry(data_screen)
+        eP.grid(row=1,column=2)
+        eN = Entry(lf)
         eN.insert(0, 'Enter a Association Name... ')
-        eN.pack(pady=5)
-        eU = Entry(data_screen)
+        eN.grid(row=2,column=1)
+        eU = Entry(lf)
         eU.insert(0, 'Enter URL... ')
-        eU.pack(pady=5)
-        submitEntry = Button(data_screen, text='Submit Entry', fg='black', font=("Arial", 10), height = 1, width = 13, command=submit_entry)
-        submitEntry.pack(pady=5, padx=20)
-        cancelEntry = Button(data_screen, text='Cancel Entry', fg='black', font=("Arial", 10), height = 1, width = 13, command=cancel_entry)
-        cancelEntry.pack(pady=5, padx=20)
-          
+        eU.grid(row=2,column=2)
+        submitEntry = Button(lf, text='Submit Entry', fg='black', font=("Arial", 10), height = 1, width = 13, command=submit_entry)
+        submitEntry.grid(row=3,column=1)
+        cancelEntry = Button(lf, text='Cancel Entry', fg='black', font=("Arial", 10), height = 1, width = 13, command=cancel_entry)
+        cancelEntry.grid(row=3,column=2)
+        lf.pack()
     def del_entry():
         selected=datatable.focus()
         values = datatable.item(selected,'values')
@@ -242,18 +245,18 @@ def local_data_screen():
     def dataset():
         global datatable
         datatable = ttk.Treeview(table_frame)
-        datatable['columns'] = ('user_email', 'password', 'name', 'url', 'created_date')
+        datatable['columns'] = ( 'name', 'user_email', 'password', 'url', 'created_date')
         datatable.column("#0", width=0,  stretch=NO)
+        datatable.column("name",anchor=CENTER,width=150)
         datatable.column("user_email",anchor=CENTER,width=150)
         datatable.column("password",anchor=CENTER,width=150)
-        datatable.column("name",anchor=CENTER,width=150)
         datatable.column("url",anchor=CENTER,width=150)
         datatable.column("created_date",anchor=CENTER,width=150)
 
         datatable.heading("#0",text="",anchor=CENTER)
+        datatable.heading("name",text="Name",anchor=CENTER)
         datatable.heading("user_email",text="Email",anchor=CENTER)
         datatable.heading("password",text="Password",anchor=CENTER)
-        datatable.heading("name",text="Name",anchor=CENTER)
         datatable.heading("url",text="Url",anchor=CENTER)
         datatable.heading("created_date",text="Created Date",anchor=CENTER)
 
@@ -264,11 +267,11 @@ def local_data_screen():
         for row in rows:
             if dataf['settings']['pass_hidden'] == 0:
                 decode_pass = decoded(row[2])
-                datatable.insert(parent='',index='end', text='', values=(row[1],decode_pass,row[3],row[4],row[5]))
+                datatable.insert(parent='',index='end', text='', values=(row[3],row[1],decode_pass,row[4],row[5]))
             elif dataf['settings']['pass_hidden'] == 1:
                 decode_pass = decoded(row[2])
                 hidden_pass = '*'*(len(decode_pass) + int(4))
-                datatable.insert(parent='',index='end', text='', values=(row[1],hidden_pass,row[3],row[4],row[5]))
+                datatable.insert(parent='',index='end', text='', values=(row[3],row[1],hidden_pass,row[4],row[5]))
         df.seek(0)
         df.truncate()
         df.write(json.dumps(dataf))
@@ -279,8 +282,11 @@ def local_data_screen():
     def copyPass():
         
         selected=datatable.focus()
-        if selected != False:
+        print(selected)
+        if selected == True:
             msgLabel.configure(text="Select A Row, Then Try Again")
+        else:
+            msgLabel.configure(text="Copied", fg='Green')    
         values = datatable.item(selected,'values')
         saved_pass = values[1]
         data_screen.clipboard_clear()
@@ -596,13 +602,44 @@ w.pack(pady=10)
 s = Scale(root, length=400,width=15, from_=6, to=30,highlightthickness=0,troughcolor='#73B5FA', tickinterval=24,sliderrelief='flat',activebackground='#1065BF', orient=HORIZONTAL,command=print_value)
 s.configure(background='lightgrey')
 s.pack(pady=20)
+def button_refresh():
+    global redbutton
+    redbutton = Button(root, text='Generate', fg='black', font=("Arial", 20), height = 1, width = 15, command=securePass)
+    df = open(filename,'r+')
+    dataf = json.load(df)
+    if dataf['settings']['license_key'] == "":
+        redbutton['state'] = "disabled"
+    else:
+        redbutton['state'] ="normal"
+    df.seek(0)
+    df.truncate()
+    df.write(json.dumps(dataf))
+    df.close()
+    redbutton.pack(pady=10)
+def destroy_button():
+    redbutton.destroy()
 
-redbutton = Button(root, text='Generate', fg='black', font=("Arial", 20), height = 1, width = 15, command=securePass)
-redbutton.pack(pady=10)
+def generate_label():
+    global warn
+    warn = Label(root, text="", fg="darkred", font=("Arial", 9))
+    df = open(filename,'r+')
+    dataf = json.load(df)
+    warn.configure(background="lightgrey")
+    if dataf['settings']['license_key'] == "":
+        warn.configure(text="Please Buy a License In Order To Start Generating Secure Passwords")
+    else:
+        warn.configure(text="*Generated Password Automatically Gets Copied To Clipboard*")
+    df.seek(0)
+    df.truncate()
+    df.write(json.dumps(dataf))
+    df.close()
+    warn.pack(pady=10)
 
-warn = Label(root, text="**Generated Password Automatically Copies to Clipboard**", fg="darkred", font=("Arial", 9))
-warn.configure(background="lightgrey")
-warn.pack(pady=10)
+def destroy_label():
+    warn.destroy()
+
+button_refresh()
+generate_label()
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
